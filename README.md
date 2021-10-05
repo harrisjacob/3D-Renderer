@@ -1,2 +1,3 @@
 # 3D-Renderer
-Experimenting with 3D rendering concepts
+
+This repository contains examples and experiments related to 3D-renderers.

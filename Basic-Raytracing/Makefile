@@ -11,15 +11,13 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%, $(BUILDDIR)/%, $(SOURCES:.$(SRCEXT)=.o))
 
-
-
-$(TARGET) : $(OBJECTS)
+$(TARGET) : $(OBJECTS) 
 	@echo " Linking..."
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(CFLAGS) $(INC)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS) $(INC) -o $@ -c $<
+	$(CC) -c -o $@ $^ $(CFLAGS) $(INC)
 
 clean:
 	@echo " Cleaning..."

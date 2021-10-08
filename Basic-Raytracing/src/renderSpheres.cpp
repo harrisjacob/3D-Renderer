@@ -1,4 +1,5 @@
 #include <vector>
+#include <fstream>
 #include "Sphere.h"
 
 
@@ -10,6 +11,7 @@
 
 #define MAX_RAY_DEPTH 5
 
+//Used by the fresnelEffect caluclation to mix the reflective and refractive values
 float mix(const float &a, const float &b, const float &mix){
 	return b*mix + a * (1-mix);
 }
@@ -139,6 +141,64 @@ Vec3f trace(const Vec3f &rayOrigin, const Vec3f &rayDirection, const std::vector
 }
 
 
+void render(const std::vector<Sphere>& spheres){
+
+	unsigned width = 640, height = 480;
+
+	Vec3f *image = new Vec3f[width*height], *pixel = image;
+	//Image is a dynamically allocate array of RGB values, pixel and image points to the first vector in array
+
+	//The following is an implementation of a camera ray generation provided by scratchapixel.com
+	//Source: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
+
+	float invWidth = 1/float(width), invHeight = 1/float(height);
+	float fov = 30, aspectRatio = width / float(height);
+
+	float angle = tan(M_PI * 0.5 * fov / 180);
+	//tan is evaulated in radians hence the pi/180, the FOV must be split in half because it is centered at the middle of the screen
+
+	//Generate rayDirection for each pixel in image
+	for(unsigned y=0; y<height; y++){
+		for(unsigned x=0; x<width; x++, pixel++){ //Iterate to the next pixel each time
+			
+			float xComponent = (2*((x+0.5)*invWidth) - 1) * angle * aspectRatio;
+			float yComponent = (1 - 2*((y+0.5)*invHeight)) * angle;
+
+			//For each pixel x, 0.5 is added to center the value horizontally on the pixel
+			//Dividing by the width (multiplying by invWidth) gives the percentage of horizontal placement, far left being 0 and far right being 1
+			//This value is in the range [0,1], but the canvas should be in the range [-1,1] so multiply by two and shift left
+			//Multiplying by aspectRation unsquashes the pixels making them square relative to the pixel height
+			//Multiplying by the angle stretches or squashes the images based on input angle
+			//The yComponent is (1 - 2 * ...) ... because pixels above the camera should have positive values, and those below should have negative values
+
+			Vec3f rayDirection(xComponent, yComponent, -1);
+			//The image canvas is 1 unit away from the camera in camera space, and the camera is align along the negative z-axis
+			rayDirection.normalize();
+
+			*pixel = trace(Vec3f(0), rayDirection, spheres, 0);
+
+		}
+	}
+
+	//Save result to PPM image
+
+	std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
+	//std::ios::out specfied that the file is open for writing, std::ios::binary means operations are performed in binary mode rather than text
+	//P6 is a binary encoding (see P6 below)
+
+	//P6 is a magic number used by PPM files, followed by whitespace separated width height, followed by the maximum color value
+	ofs << "P6\n" << width << " " << height << "\n255\n";
+	for(unsigned i=0; i< width*height; i++){
+		ofs << 	(unsigned char)(std::min(float(1), image[i].x) * 255) <<
+				(unsigned char)(std::min(float(1), image[i].y) * 255) <<
+				(unsigned char)(std::min(float(1), image[i].z) * 255);
+		//Each sample is represented in 1 byte pur binary, hence unsigned char
+	}
+
+	ofs.close();
+	delete[] image;	
+
+}
 
 
 int main(){

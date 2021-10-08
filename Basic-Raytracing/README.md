@@ -7,7 +7,7 @@ be used for exploration purposes.
 ## Other Sources Used
 * [Reflection and Refractions in Ray Tracing](https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf)
 * [Ray-Tracing: Generating Camera Rays](https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays)
-* [Build-your-own-x GitHub Repo](https://github.com/danistefanovic/build-your-own-x#build-your-own-git)
+* [Build-your-own-x GitHub Repository](https://github.com/danistefanovic/build-your-own-x)
 
 ## Result
 

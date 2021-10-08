@@ -36,8 +36,9 @@ public:
 
 };
 
-
-
+//Default constructor
+template <typename T>
+Vec3<T>::Vec3(): x(T(0)), y(T(0)), z(T(0)){};
 
 //Single value constructor
 template <typename T>

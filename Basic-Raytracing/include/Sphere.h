@@ -7,7 +7,7 @@ public:
 	Vec3f surfaceColor, emissionColor;	//surface color and emission (light)
 	float transparency, reflection;		//sufrace transparency and reflectivity
 
-	Sphere(const Vec3f &, const float &, const Vec3f &, const float &, const float &, const Vec3f &);
+	Sphere(const Vec3f &, const float &, const Vec3f &, const float & =0, const float & =0, const Vec3f & =0);
 
 	bool intersect(const Vec3f &, const Vec3f &, float &, float &) const;
 

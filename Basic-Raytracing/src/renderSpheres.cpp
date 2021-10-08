@@ -182,7 +182,7 @@ void render(const std::vector<Sphere>& spheres){
 
 	//Save result to PPM image
 
-	std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary);
+	std::ofstream ofs("./sphereRender.ppm", std::ios::out | std::ios::binary);
 	//std::ios::out specfied that the file is open for writing, std::ios::binary means operations are performed in binary mode rather than text
 	//P6 is a binary encoding (see P6 below)
 
@@ -201,6 +201,20 @@ void render(const std::vector<Sphere>& spheres){
 }
 
 
-int main(){
+int main(int argc, char **argv){
+	
+
+	std::vector<Sphere> spheres;
+	//position, radius, surface color, reflection =0, transparency =0, emission color =0
+	spheres.push_back(Sphere(Vec3f(0.0,-10004, -20), 10000, Vec3f(0.2,0.2,0.2), 0, 0.0));
+	spheres.push_back(Sphere(Vec3f(0.0,0, -20), 			4, Vec3f(1.0,0.32,0.36), 1, 0.5));
+	spheres.push_back(Sphere(Vec3f(5,-1, -15), 				2, Vec3f(0.9,0.76,0.46), 1, 0.0));
+	spheres.push_back(Sphere(Vec3f(5,0, -25), 				3, Vec3f(0.65,0.77,0.97), 1, 0.0));
+	spheres.push_back(Sphere(Vec3f(-5.5,0, -15), 			3, Vec3f(0.9,0.9,0.9), 1, 0.0));
+
+	//Light source
+	spheres.push_back(Sphere(Vec3f(0.0,20, -30),	 		3, Vec3f(0.0,0.0,0.0), 0, 0.0, Vec3f(3)));
+	render(spheres);
+
 	return 0;
 }

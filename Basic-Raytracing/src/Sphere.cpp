@@ -4,12 +4,12 @@ Sphere::Sphere(
 	const Vec3f &_center, 
 	const float &_radius, 
 	const Vec3f &_surfaceColor, 
-	const float &_reflection = 0, 
-	const float &_transparency = 0, 
-	const Vec3f &_emissionColor = 0
+	const float &_reflection, 
+	const float &_transparency, 
+	const Vec3f &_emissionColor
 	) :
 	center(_center), radius(_radius), radius2(_radius*_radius), surfaceColor(_surfaceColor),
-	emissionColor(_emissionColor), transparency(_transparency), reflection(_reflection)  
+	emissionColor(_emissionColor), transparency(_transparency), reflection(_reflection)
 	{}
 
 

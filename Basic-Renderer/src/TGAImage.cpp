@@ -65,9 +65,9 @@ bool TGAImage::read_tga_file(const std::string filename){
 
 		//Read in the raw data
 		in.read(reinterpret_cast<char *>(data.data()),nbytes);
-		if(in.good()){
+		if(!in.good()){
 			in.close();
-			std::cerr << "An error occured while reading the data\n";
+			std::cerr << "An error occured while reading the raw data\n";
 			return false;
 		}
 
@@ -140,6 +140,9 @@ bool TGAImage::load_rle_data(std::ifstream& in){
 				in.read(reinterpret_cast<char*>(colorBuffer.bgra), bytesPerPixel);	//Read a full pixel into a buffer
 				if(!in.good()){
 					std::cerr << "An error occured while reading in a raw packet\n";
+					getInfo();
+					std::cerr << "Failed on pixel " << currentPixel << " of " << pixelCount;
+					std::cerr << " (Row " << currentPixel/width << " pixel " << currentPixel%width << ")\n";
 					return false;
 				}
 
@@ -456,4 +459,10 @@ std::uint8_t* TGAImage::buffer(){
 //Clear the data buffer
 void TGAImage::clear(){
 	data = std::vector<std::uint8_t>(width*height*bytesPerPixel, 0);
+}
+
+//Debugging Information
+void TGAImage::getInfo(){
+	std::cerr << "TGA size: " << width <<"x" << height << "\n";
+	std::cerr << "Pixels storage: " << bytesPerPixel << " bytes/pixel\n";
 }

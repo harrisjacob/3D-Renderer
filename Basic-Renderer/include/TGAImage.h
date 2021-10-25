@@ -83,4 +83,5 @@ public:
 	int get_bytespp();
 	std::uint8_t* buffer();
 	void clear();
+	void getInfo();
 };

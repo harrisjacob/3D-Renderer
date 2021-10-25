@@ -192,6 +192,138 @@ bool TGAImage::load_rle_data(std::ifstream& in){
 
 }
 
+//Writes data stream to  a TGA file
+bool TGAImage::write_tga_file(const std::string filename, const bool vflip, const bool rle) const {
+
+	std::uint8_t developer_area_ref[4] = {0};
+	std::uint8_t extension_area_ref[4] = {0};
+	std::uint8_t footer[18] = {'T','R','U','E','V','I','S','I','O','N','-','X','F','I','L','E','.','\0'};
+	std::ofstream out;
+	out.open(filename, std::ios::binary);
+	if(!out.is_open()){
+		std::cerr << "cant open file " << filename << " for writing\n";
+		out.close();
+		return false;
+	}
+
+	TGA_Header header;
+	header.bitsperpixel = bytesPerPixel << 3; //Convert to bits
+	header.width = width;
+	header.height = height;
+	header.datatypecode = (bytesPerPixel==GRAYSCALE ? (rle?11:3):(rle?10:2));
+	header.imagedescriptor = vflip ? 0x00 : 0x20;
+	out.write(reinterpret_cast<const char*>(&header), sizeof(header)); //Write the header
+	if(!out.good()){
+		out.close();
+		std::cerr << "Failed to dump the header to tga file\n";
+		return false;
+	}
+	if(!rle){
+		out.write(reinterpret_cast<const char*>(data.data()), width*height*bytesPerPixel);
+		if(!out.good()){
+			std::cerr << "Failed to write raw data to tga file\n";
+			out.close();
+			return false;
+		}
+	}else{
+		if(!unload_rle_data(out)){
+			out.close();
+			std::cerr << "Failed ot unload rle data to tga file\n";
+			return false;
+		}
+	}
+
+	out.write(reinterpret_cast<const char *>(developer_area_ref), sizeof(developer_area_ref));
+	if(!out.good()){
+		std::cerr << "Failed to write developer area to tga file\n";
+		out.close();
+		return false;
+	}
+
+	out.write(reinterpret_cast<const char *>(extension_area_ref), sizeof(extension_area_ref));
+	if(!out.good()){
+		std::cerr << "Failed to write extension area to tga file\n";
+		out.close();
+		return false;
+	}
+	out.write(reinterpret_cast<const char *>(footer), sizeof(footer));
+	if(!out.good()){
+		std::cerr << "Failed to write footer to tga file\n";
+		out.close();
+		return false;
+	}
+
+
+	out.close();
+	return true;
+
+}
+
+
+//Write encoding to output file
+bool TGAImage::unload_rle_data(std::ofstream &out) const{
+
+	const std::uint8_t max_chunk_length = 128;
+	size_t nPixels = width*height;
+	size_t currentPixel;
+	while(currentPixel < nPixels){
+
+		size_t chunk_start = currentPixel*bytesPerPixel;
+		size_t currentByte = currentPixel*bytesPerPixel;
+		std::uint8_t run_length = 1;
+		bool raw = true;
+
+		//Find a chunk
+		while(currentPixel+run_length < nPixels && run_length < max_chunk_length){
+			bool nextMatches = true;
+			for(int t=0; nextMatches && t<bytesPerPixel; t++)
+				nextMatches = (data[currentByte + t] == data[currentByte+t+bytesPerPixel]); //Check if the current pixel matches the previous pixel by comparing its RGB values
+
+			currentByte += bytesPerPixel; 					//Move forward one pixel
+			
+			if(run_length == 1){							//If this is the first pixel in the run of pixels
+				raw = !nextMatches;							//If the pixel matches the next pixel, don't use a raw packet
+			}
+
+			if(raw && nextMatches){							//Raw packets should not have consecutive matching pixels		
+				run_length--;								//Back up one pixel
+				break;
+			}
+
+			if(!raw && !nextMatches){						//Run length packets (non-raw packets) should have consecutive matching pixels
+				break;										//If the next doesn't match, leave it for the next packet
+			}
+
+			run_length++;
+		}
+
+		currentPixel += run_length;							//Move the currentPixel forward the number of pixels handled in the current packet
+
+
+		//See http://www.paulbourke.net/dataformats/tga/ for more information on encoding packets
+		//Write the packet header
+		out.put(raw?run_length-1:run_length+127);
+		if(!out.good()){
+			std::cerr << "Failed to write a packet header to tga file\n";
+			return false;
+		}
+
+		//Write the packet body
+		out.write(reinterpret_cast<const char *>(data.data()+chunk_start), (raw?run_length*bytesPerPixel:bytesPerPixel));
+		//Raw pixels should copy each pixel data consecutively, run length packets copy a single pixel that is copied the number of times in the packet header
+		if(!out.good()){
+			std::cerr << "Failed to write packet body to tga file\n";
+			return false;
+		}
+
+	}
+
+	return true;
+
+}
+
+
+
 //Mirrors pixels over the vertical axis
 void TGAImage::flip_horizontally(){
 	if(!data.size()) return;

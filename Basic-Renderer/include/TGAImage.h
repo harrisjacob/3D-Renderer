@@ -64,7 +64,7 @@ protected:
 	int bytesPerPixel;
 
 	bool load_rle_data(std::ifstream&);
-	//bool unload_rle_data(std::ofstream &);
+	bool unload_rle_data(std::ofstream &) const;
 
 public:
 	enum Format { GRAYSCALE=1, RGB=3, RGBA=4};
@@ -72,7 +72,7 @@ public:
 	TGAImage();
 	TGAImage(const int, const int, const int);
 	bool read_tga_file(const std::string);
-	//bool write_tga_file(const std::string, const bool =true, const bool =true) const;
+	bool write_tga_file(const std::string, const bool =true, const bool =true) const;
 	void flip_horizontally();
 	void flip_vertically();
 	void scale(const int, const int);

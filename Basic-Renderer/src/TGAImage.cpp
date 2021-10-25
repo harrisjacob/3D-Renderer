@@ -15,6 +15,7 @@ TGAImage::TGAImage(const int _width, const int _height, const int _bpp) :
 
 //Read in a TGA file
 bool TGAImage::read_tga_file(const std::string filename){
+
 	std::ifstream in;
 	in.open(filename, std::ios::binary);
 	if(!in.is_open()){
@@ -113,7 +114,6 @@ bool TGAImage::read_tga_file(const std::string filename){
 
 //Function used to load a run length encoded (rle) TGA file
 bool TGAImage::load_rle_data(std::ifstream& in){
-
 	size_t pixelCount = width*height;			//Expected pixel to read
 	size_t currentPixel = 0;					//Should always maintain number of pixels read and compare to expected pixels (pixelCount)
 	size_t currentByte = 0;						//Should always maintain offset into the TGAImage data field
@@ -122,7 +122,6 @@ bool TGAImage::load_rle_data(std::ifstream& in){
 	do{
 		std::uint8_t chunkHeader = 0;
 		chunkHeader = in.get();	//Read a single byte from the input stream
-
 		if(!(in.good())){
 			std::cerr << "An error occured when parsing the run length encoded data\n";
 			return false;
@@ -154,11 +153,12 @@ bool TGAImage::load_rle_data(std::ifstream& in){
 				currentPixel++;
 				if(currentPixel > pixelCount){
 					std::cerr << "Too many pixels were read while reading raw packets\n";
+					std::cerr << "Chunk size: " << chunkHeader-0 << "\n";
+					std::cerr << "Read " << currentPixel << " but only " << pixelCount << " is allowed.\n";
 					return false;
 				}
 
 			}
-
 
 
 		}else{ //Run length packet (high order bit is 1, so will be 128 or greater)
@@ -179,12 +179,13 @@ bool TGAImage::load_rle_data(std::ifstream& in){
 				for(int t=0; t<bytesPerPixel; t++){
 					data[currentByte++] = colorBuffer.bgra[t];
 				}
-			}
 
-			currentPixel++;
-			if(currentPixel > pixelCount){
-				std::cerr << "Too many pixels were read while reading rune length packets\n";
-				return false;
+				currentPixel++;
+				if(currentPixel > pixelCount){
+					std::cerr << "Too many pixels were read while reading run length packets\n";
+					return false;
+				}
+
 			}
 
 		}
@@ -265,10 +266,9 @@ bool TGAImage::write_tga_file(const std::string filename, const bool vflip, cons
 
 //Write encoding to output file
 bool TGAImage::unload_rle_data(std::ofstream &out) const{
-
 	const std::uint8_t max_chunk_length = 128;
 	size_t nPixels = width*height;
-	size_t currentPixel;
+	size_t currentPixel = 0;
 	while(currentPixel < nPixels){
 
 		size_t chunk_start = currentPixel*bytesPerPixel;
@@ -306,6 +306,7 @@ bool TGAImage::unload_rle_data(std::ofstream &out) const{
 		//See http://www.paulbourke.net/dataformats/tga/ for more information on encoding packets
 		//Write the packet header
 		out.put(raw?run_length-1:run_length+127);
+		//std::cerr << "Wrote packet header: " << (raw?run_length-1:run_length+127) << "\n";
 		if(!out.good()){
 			std::cerr << "Failed to write a packet header to tga file\n";
 			return false;
@@ -313,6 +314,7 @@ bool TGAImage::unload_rle_data(std::ofstream &out) const{
 
 		//Write the packet body
 		out.write(reinterpret_cast<const char *>(data.data()+chunk_start), (raw?run_length*bytesPerPixel:bytesPerPixel));
+		// std::cerr << "Wrote packet body: " << (raw?run_length-1:run_length+127) << "\n";
 		//Raw pixels should copy each pixel data consecutively, run length packets copy a single pixel that is copied the number of times in the packet header
 		if(!out.good()){
 			std::cerr << "Failed to write packet body to tga file\n";

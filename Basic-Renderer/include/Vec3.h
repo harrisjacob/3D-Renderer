@@ -137,5 +137,4 @@ std::ostream& operator<<(std::ostream& os, const Vec3<T> &v){
 }
 
 
-
 #endif //__VEC3_H__

@@ -47,23 +47,23 @@ Model::Model(const char *filename) : vertices_(), faces_() {
 }
 
 //Get the vertex count
-int Model::nVerts(){
+int Model::nVerts() const{
 	return vertices_.size();
 }
 
 
 //Get the face count
-int Model::nFaces(){
+int Model::nFaces() const{
 	return faces_.size();
 }
 
 //Get a vertex at index idx
-Vec3f Model::vert(int idx){
+Vec3f Model::vert(int idx) const{
 	return vertices_[idx];
 }
 
 //Get a face at index idx
-std::vector<int> Model::face(int idx){
+std::vector<int> Model::face(int idx) const{
 	return faces_[idx];
 }
 

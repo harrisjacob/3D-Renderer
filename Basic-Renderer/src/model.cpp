@@ -39,11 +39,11 @@ Model::Model(const char *filename) : vertices_(), faces_() {
 			}
 
 			faces_.push_back(f);
-		}
 
-		debug();
+		}	
 
 	}
+
 }
 
 //Get the vertex count
